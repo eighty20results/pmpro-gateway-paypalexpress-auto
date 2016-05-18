@@ -154,10 +154,10 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
                 $gw,
                 'pmpro_checkout_default_submit_button'
             ));
-            add_action('pmpro_checkout_after_form', array(
+/*            add_action('pmpro_checkout_after_form', array(
                 $gw,
                 'pmpro_checkout_after_form'
-            ));
+            )); */
 
             add_action('wp_enqueue_scripts', array($gw, 'enqueue'));
 
@@ -917,7 +917,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      *
      * @since 1.8
      */
-    static function pmpro_checkout_after_form()
+/*    static function pmpro_checkout_after_form()
     {
         ?>
         <script>
@@ -946,7 +946,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         </script>
         <?php
     }
-
+*/
     function getExpressCheckoutDetails(&$order)
     {
 
