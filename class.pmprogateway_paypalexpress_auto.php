@@ -360,6 +360,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
                        value="<?php echo esc_attr($values['ppauto_apisignature']) ?>"/>
             </td>
         </tr>
+        <!--
         <tr class="gateway gateway_paypalexpress_auto"
             <?php if ($gateway != "paypalexpress_auto" && $gateway != "paypal" && $gateway != "paypalexpress") { ?>style="display: none;"<?php } ?>>
             <th scope="row" valign="top">
@@ -396,21 +397,22 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
                 ) ?>
             </td>
         </tr>
+        -->
         <tr class="gateway gateway_paypal gateway_paypalexpress_auto"
             <?php if ($gateway != "paypalexpress_auto" && $gateway != "paypal" && $gateway != "paypalexpress") { ?>style="display: none;"<?php } ?>>
             <th scope="row" valign="top">
-                <label for="paypal_skip_confirmation"><?php _e('Confirmation Step', 'pmpro'); ?>:</label>
+                <label for="paypal_skip_confirmation"><?php _e('Require confirmation', 'pmpro'); ?>:</label>
             </th>
             <td>
                 <select id="paypal_skip_confirmation" name="paypal_skip_confirmation">
                     <option
-                        value="0" <?php selected(pmpro_getOption('paypal_skip_confirmation'), 0); ?>><?php _e("Require confirmation after being returned from the PayPal payment page.", "pmpro"); ?></option>
+                        value="0" <?php selected(pmpro_getOption('paypal_skip_confirmation'), 0); ?>><?php _e("Yes", "pmpro"); ?></option>
                     <option
-                        value="1" <?php selected(pmpro_getOption('paypal_skip_confirmation'), 1); ?>><?php _e("Skip confirmation after being returned from the PayPal payment page.", "pmpro"); ?></option>
+                        value="1" <?php selected(pmpro_getOption('paypal_skip_confirmation'), 1); ?>><?php _e("No", "pmpro"); ?></option>
                 </select>
+                <span><small><? _e("Return the user to this site to confirm payment (Note: Payment will not be collected until they click the 'Confirm' button).", "pmpro"); ?></small></span>
             </td>
         </tr>
-
         <tr class="gateway gateway_paypalexpress_auto"
             <?php if ($gateway != "paypalexpress_auto" && $gateway != "paypal" && $gateway != "paypalexpress") { ?>style="display: none;"<?php } ?>>
             <th scope="row" valign="top">
