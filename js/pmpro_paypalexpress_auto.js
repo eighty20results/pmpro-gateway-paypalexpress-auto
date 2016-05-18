@@ -30,12 +30,12 @@ var pmpro_PayPalGW = {
 
         var self = this;
 
-        self.gateway_input.unset('click').on('click', function() {
+        self.gateway_input.unbind('click').on('click', function() {
             self.show_for_gateway();
         });
 
         //selects the radio button if the user clicks on the the associated label
-        self.gateway_radiobtn.unset('click').on('click', function () {
+        self.gateway_radiobtn.unbind('click').on('click', function () {
             jQuery(this).prev().click();
         });
 
