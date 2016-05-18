@@ -28,6 +28,8 @@ var pmpro_PayPalGW = {
         this.payment_info_fields = jQuery('#pmpro_payment_information_fields');
         this.payment_btn = jQuery('#pmpro_submit_span');
         this.paypal_btn = jQuery('span#pmpro_paypalexpress_checkout');
+        this.user_fields = jQuery("#pmpro_user_fields");
+        this.user_fields_lnk = jQuery('#pmpro_user_fields_a');
 
         this.payment_method = jQuery('table#pmpro_payment_method');
 
@@ -61,6 +63,8 @@ var pmpro_PayPalGW = {
 
             case 'paypalexpress_auto':
                 console.log("Showing/hiding for the PayPal Express Auto-confirmation gateway");
+                self.user_fields.show();
+                self.user_fields_lnk.hide();
                 self.payment_method.hide();
                 self.payment_btn.hide();
                 self.paypal_btn.hide();
