@@ -26,7 +26,10 @@ var pmpro_PayPalGW = {
         this.payment_checkout = jQuery('#pmpro_' + this.gateway_name + '_checkout');
         this.payment_billing_info = jQuery('#pmpro_billing_address_fields');
         this.payment_info_fields = jQuery('#pmpro_payment_information_fields');
-        this.payment_btn_submit = jQuery('#pmpro_submit_span');
+        this.payment_btn = jQuery('#pmpro_submit_span');
+        this.paypal_btn = jQuery('span#pmpro_paypalexpress_checkout');
+
+        this.payment_method = jQuery('table#pmpro_payment_method');
 
         var self = this;
 
@@ -50,21 +53,24 @@ var pmpro_PayPalGW = {
 
         switch(self.gateway_name) {
             case 'paypal':
-
+                console.log("Show for PayPal gateway is TODO");
                 break;
             case 'paypalexpress':
-
+                console.log("Show for PayPal Express gateway is TODO");
                 break;
 
             case 'paypalexpress_auto':
-
+                console.log("Showing/hiding for the PayPal Express Auto-confirmation gateway");
+                self.payment_method.hide();
+                self.payment_btn.hide();
+                self.paypal_btn.hide();
                 break;
 
             default:
-
-                self.payment_billing_info.hide();
-                self.payment_info_fields.hide();
-                self.payment_btn_submit.hide();
+                console.log("No recognized PayPal gateway");
+                self.payment_billing_info.show();
+                self.payment_info_fields.show();
+                self.payment_btn.show();
                 self.payment_checkout.show();
 
         }
@@ -73,39 +79,8 @@ var pmpro_PayPalGW = {
 
 
 jQuery(document).ready(function() {
-
     "use strict";
 
     var PayPal = pmpro_PayPalGW;
-
     PayPal.init();
-
-    PayPal.show_for_gateway();
-
-    //choosing payment method
-    jQuery('input[name="gateway"]').click(function () {
-
-        var $gw_name = jQuery(this);
-
-        if ($gw_name.val() === 'paypal') {
-            console.log("Processing for PayPal gateway");
-            jQuery('#pmpro_paypalexpress_auto_checkout').hide();
-            jQuery('#pmpro_billing_address_fields').show();
-            jQuery('#pmpro_payment_information_fields').show();
-            jQuery('#pmpro_submit_span').show();
-        }
-
-        if ( $gw_name.val() === 'paypalexpress_auto') {
-            console.log("Processing for PayPal Express (auto) gateway");
-            jQuery('#pmpro_billing_address_fields').hide();
-            jQuery('#pmpro_payment_information_fields').hide();
-            jQuery('#pmpro_submit_span').hide();
-            jQuery('#pmpro_paypalexpress_auto_checkout').show();
-        }
-
-        if ( $gw_name.val() === 'paypalexpress') {
-            console.log("Processing for PayPal Express gateway");
-        }
-    });
-
 });
