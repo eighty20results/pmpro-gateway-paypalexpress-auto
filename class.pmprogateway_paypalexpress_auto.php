@@ -160,6 +160,10 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             ));
 
             add_action('wp_enqueue_scripts', array($gw, 'enqueue'));
+
+            // Don't allow the Add PayPal Express add-on to show itself on the checkout page
+            remove_action('pmpro_checkout_boxes', 'pmproappe_pmpro_checkout_boxes', 20);
+            remove_action('pmpro_applydiscountcode_return_js', 'pmproappe_pmpro_applydiscountcode_return_js', 10, 4);
         }
 
         $gw->set_gateway();
@@ -303,7 +307,6 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      */
     static function pmpro_payment_option_fields($values, $gateway)
     {
-
         global $pmpro_pages;
 
         ?>
@@ -623,7 +626,13 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         return $new_user_array;
     }
 
-    //PayPal Express, this is run first to authorize from PayPal
+    /**
+     * PayPal Express, this is run first to authorize from PayPal
+     *
+     * @param MemberOrder $order - The order class
+     *
+     * @return boolean - false if the remote request failed
+     */
     function setExpressCheckout(&$order)
     {
 
@@ -785,7 +794,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
 
         $account_optional = apply_filters('pmpro_paypal_account_optional', true);
 
-        if ($account_optional) {
+        if (true == $account_optional) {
 
             $nvpStr .= "&SOLUTIONTYPE=Sole";
             $nvpStr .= "&LANDINGPAGE=Billing";
@@ -798,8 +807,8 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
 
         $this->httpParsedResponseAr = $this->PPHttpPost('SetExpressCheckout', $nvpStr);
 
-        if ("SUCCESS" == strtoupper($this->httpParsedResponseAr["ACK"]) ||
-            "SUCCESSWITHWARNING" == strtoupper($this->httpParsedResponseAr["ACK"])
+        if ("SUCCESS" === strtoupper($this->httpParsedResponseAr["ACK"]) ||
+            "SUCCESSWITHWARNING" === strtoupper($this->httpParsedResponseAr["ACK"])
         ) {
 
             $order->status = "token";
@@ -813,11 +822,11 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
                 'cmd' => '_express-checkout'
             );
 
-            if (!empty($this->httpParsedResponseAr["TOKEN"])) {
+            if ( ! empty($this->httpParsedResponseAr["TOKEN"]) ) {
                 $pp_options['token'] = $this->httpParsedResponseAr['TOKEN'];
             }
 
-            if (pmpro_getOption('paypal_skip_confirmation')) {
+            if (true == pmpro_getOption('paypal_skip_confirmation')) {
                 $pp_options['useraction'] = 'commit';
             }
 
@@ -840,7 +849,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             $paypal_url .= $paypal_params;
 
             if (WP_DEBUG) {
-                error_log("Redirecting to PayPal: {$paypal_url}");
+                error_log("Sending user to PayPal: {$paypal_url}");
             }
 
             wp_redirect($paypal_url);
@@ -880,7 +889,8 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         <?php if ($gateway == "paypal" || $gateway == "paypalexpress" || $gateway == "paypalstandard" || $gateway == "paypalexpress_auto") { ?>
         <span id="pmpro_paypalexpress_auto_checkout"
               <?php if (($gateway != "paypalexpress_auto" && $gateway != "paypalexpress" && $gateway != "paypalstandard") || !$pmpro_requirebilling) { ?>style="display: none;"<?php } ?>>
-				<input type="hidden" name="submit-checkout" value="1"/>
+			<input type="hidden" name="gateway" value="<?php echo $gateway; ?>" />
+            <input type="hidden" name="submit-checkout" value="1"/>
 				<input type="image" value="<?php _e('Check Out with PayPal', 'pmpro'); ?> &raquo;"
                        src="<?php echo apply_filters("pmpro_paypal_button_image", "https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"); ?>"/>
 			</span>
