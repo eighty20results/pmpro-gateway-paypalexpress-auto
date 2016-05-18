@@ -188,8 +188,15 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
 
     public function enqueue()
     {
-
-        wp_enqueue_script('pmpro_gateway_paypalexpress_auto', plugin_dir_url(__FILE__) . 'js/pmpro_paypalexpress_auto.js', array('jquery', 'ssmemberships_js', 'pmpro_discountcodes'), PMPRO_VERSION);
+        global $gateway;
+        wp_register_script('pmpro_gateway_paypalexpress_auto', plugin_dir_url(__FILE__) . 'js/pmpro_paypalexpress_auto.js', array('jquery', 'ssmemberships_js', 'pmpro_discountcodes'), PMPRO_VERSION);
+        wp_localize_script( 'pmpro_gateway_paypalexpress_auto', 'pmpro_ppea_gw' , array(
+                'variables' => array(
+                    'gateway_name' => $gateway,
+                )
+            )
+        );
+        wp_enqueue_script('pmpro_gateway_paypalexpress_auto');
     }
 
     /**
