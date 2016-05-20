@@ -30,7 +30,7 @@ var pmpro_PayPalGW = {
         this.paypal_btn = jQuery('span#pmpro_paypalexpress_checkout');
         this.user_fields = jQuery("#pmpro_user_fields");
         this.user_fields_lnk = jQuery('#pmpro_user_fields_a');
-
+        this.billing_info = jQuery('#pmpro_billing_address_fields');
         this.payment_method = jQuery('table#pmpro_payment_method');
 
         var self = this;
@@ -45,6 +45,22 @@ var pmpro_PayPalGW = {
         });
 
         self.show_for_gateway();
+
+        // Do we need to display the billing address fields?
+        if (pmpro_ppea_gw.variables.show_billing_address === 1 ) {
+            self.show_billing_address();
+        }
+    },
+    show_billing_address: function() {
+        "use strict";
+
+        var self = this;
+
+        if (self.billing_info.length > 0) {
+            console.log("Billing fields are present on the page");
+            self.billing_info.hide();
+        }
+
     },
     show_for_gateway: function() {
 
@@ -76,7 +92,6 @@ var pmpro_PayPalGW = {
                 self.payment_info_fields.show();
                 self.payment_btn.show();
                 self.payment_checkout.show();
-
         }
     }
 };
