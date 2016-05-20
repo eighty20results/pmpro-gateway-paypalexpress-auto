@@ -33,6 +33,9 @@ var pmpro_PayPalGW = {
         this.billing_info = jQuery('#pmpro_billing_address_fields');
         this.payment_method = jQuery('table#pmpro_payment_method');
 
+        this.confirm_isset = jQuery('#pmpro_submit_span input[name="confirm"]').val();
+        this.token_isset = jQuery('#pmpro_submit_span input[name="token"]').val();
+
         var self = this;
 
         self.gateway_input.unbind('click').on('click', function() {
@@ -82,7 +85,15 @@ var pmpro_PayPalGW = {
                 self.user_fields.show();
                 self.user_fields_lnk.hide();
                 self.payment_method.hide();
-                self.payment_btn.hide();
+
+                if ( (self.token_isset.length > 0) && (self.confirm_isset > 0) ){
+                    console.log("Will show the confirmation button");
+                    self.payment_btn.show();
+                } else {
+                    console.log("Will hide the confirmation/payment button");
+                    self.payment_btn.hide();
+                }
+
                 self.paypal_btn.hide();
                 break;
 
