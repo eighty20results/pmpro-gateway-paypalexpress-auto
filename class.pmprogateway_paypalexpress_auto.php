@@ -3,7 +3,7 @@
 Plugin Name: E20R PayPal Express Gateway (automatic confirmation)
 Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-customizations/
 Description: PayPal Express payment gateway for PMPro w/Automatic confirmation
-Version: 1.1
+Version: 1.2
 Author: Thomas Sjolshagen @ Stranger Studios <thomas@eighty20results.com>
 Author URI: http://www.strangerstudios.com
 */
@@ -36,10 +36,7 @@ if (defined('PMPRO_DIR') && file_exists(PMPRO_DIR . "/classes/gateways/class.pmp
     return;
 }
 
-define('PMPRO_PPEA_VERSION', '1.1');
-
-//load class when WP is loaded
-add_action('plugins_loaded', array(PMProGateway_paypalexpress_auto::get_instance(), 'init'), 11);
+define('PMPRO_PPEA_VERSION', '1.2');
 
 class PMProGateway_paypalexpress_auto extends PMProGateway
 {
@@ -1536,3 +1533,12 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         return $httpParsedResponseAr;
     }
 }
+
+//load class when WP is loaded
+add_action('plugins_loaded', array( PMProGateway_paypalexpress_auto::get_instance(), 'init'), 11);
+
+require plugin_dir_url(__FILE__) . 'plugin-updates/plugin-update-checker.php';
+$myUpdateChecker = PucFactory::buildUpdateChecker(
+    'https://eighty20results.com/protected-content/pmpro-gateway-paypalexpress-auto/metadata.json',
+    __FILE__
+);
