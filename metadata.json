@@ -1,0 +1,16 @@
+{
+  "name" : "PMPro Gateway: Automatic Confirmation for PayPal Express",
+  "slug" : "pmpro-gateway-paypalexpress-auto",
+  "download_url" : "https://eighty20results.com/protected-content/pmpro-gateway-paypalexpress-auto/pmpro-gateway-paypalexpress-auto-1.1.zip",
+  "version" : "1.1",
+  "tested": "4.5.2",
+  "requires": "3.9",
+  "author" : "Thomas Sjolshagen <thomas@eighty20results.com>",
+  "author_homepage": "https://eighty20results.com/thomas-sjolshagen",
+  "last_updated": "2016-05-23 10:00:00",
+  "homepage": "https://eighty20results.com/do-it-for-me-paid-memberships-pro/",
+  "sections" : {
+    "changelog": "<p><strong>Please note</strong>: We recommend that you never deploy any plug-in on a live/production site without thoroughly exercising it in a test/development environment first!</p>",
+    "faq": "<h3>I found a bug in the plugin.</h3>Please report your issue using the <a href='https://eighty20results.com/support/' target='_blank'>support form</a>. Or you can email support@eighty20results.zendesk.com"
+    }
+}
