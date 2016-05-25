@@ -1537,7 +1537,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
 //load class when WP is loaded
 add_action('plugins_loaded', array( PMProGateway_paypalexpress_auto::get_instance(), 'init'), 11);
 
-require plugin_dir_url(__FILE__) . 'plugin-updates/plugin-update-checker.php';
+require plugin_dir_path(__FILE__) . 'plugin-updates/plugin-update-checker.php';
 $myUpdateChecker = PucFactory::buildUpdateChecker(
     'https://eighty20results.com/protected-content/pmpro-gateway-paypalexpress-auto/metadata.json',
     __FILE__
