@@ -10,7 +10,7 @@
   "last_updated": "2016-05-23 10:00:00",
   "homepage": "https://eighty20results.com/do-it-for-me-paid-memberships-pro/",
   "sections" : {
-    "changelog": "<p><strong>Please note</strong>: We recommend that you never deploy any plug-in on a live/production site without thoroughly exercising it in a test/development environment first!</p>",
+    "changelog": "<p><strong>Please note</strong>: We recommend that you never deploy any plug-in on a live/production site without thoroughly exercising it in a test/development environment first!</p><h3>1.2</h3><ol><li>FIX: Refactored</li><li>ENHANCEMENT: Add build environment</li><li>ENHANCEMENT: Added one-click upgrade support</li></ol>",
     "faq": "<h3>I found a bug in the plugin.</h3>Please report your issue using the <a href='https://eighty20results.com/support/' target='_blank'>support form</a>. Or you can email support@eighty20results.zendesk.com"
     }
 }
