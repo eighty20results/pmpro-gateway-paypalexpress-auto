@@ -3,7 +3,7 @@ Contributors: strangerstudios, eighty20results
 Tags: paid memberships pro, ecommerce, paypal express, payment gateway
 Requires at least: 3.5
 Tested up to: 4.5.2
-Stable tag: 1.0
+Stable tag: 1.2
 
 A custom PayPal Express Payment Gateway for Paid Memberships Pro
 
@@ -28,3 +28,10 @@ Go to Memberships -> Payment Settings in the WordPress admin to select the "PayP
 == Changelog ==
 = 1.0 =
 * Initial release of the Payment Gateway add-on
+
+== 1.2 ==
+
+* FIX: Refactored
+* ENHANCEMENT: Add build environment
+* ENHANCEMENT: Added one-click upgrade support
+
