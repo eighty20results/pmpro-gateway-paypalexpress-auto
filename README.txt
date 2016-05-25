@@ -26,12 +26,14 @@ In your WordPress admin:
 Go to Memberships -> Payment Settings in the WordPress admin to select the "PayPal Express (Auto)" payment gateway and configure the required input fields.
 
 == Changelog ==
-= 1.0 =
-* Initial release of the Payment Gateway add-on
-
 == 1.2 ==
-
 * FIX: Refactored
+* FIX: Didn't load plugin update files correctly
+* FIX: Path to plugin-updates
 * ENHANCEMENT: Add build environment
 * ENHANCEMENT: Added one-click upgrade support
+
+
+== 1.0 ==
+* Initial release of the Payment Gateway add-on
 
