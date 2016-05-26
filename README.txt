@@ -3,7 +3,7 @@ Contributors: strangerstudios, eighty20results
 Tags: paid memberships pro, ecommerce, paypal express, payment gateway
 Requires at least: 3.5
 Tested up to: 4.5.2
-Stable tag: 1.2
+Stable tag: 1.2.1
 
 A custom PayPal Express Payment Gateway for Paid Memberships Pro
 
@@ -26,6 +26,11 @@ In your WordPress admin:
 Go to Memberships -> Payment Settings in the WordPress admin to select the "PayPal Express (Auto)" payment gateway and configure the required input fields.
 
 == Changelog ==
+== 1.2.1 ==
+* FIX: Didn't ensure consistent request number for PayPal transaction URL
+* FIX: Only configure gateway info & IPN link if using this gateway
+* FIX: Subscription plans would fail since subscription profiles do not support PAYMENTREQUEST_n_* fields
+
 == 1.2 ==
 * FIX: Refactored
 * FIX: Didn't load plugin update files correctly
