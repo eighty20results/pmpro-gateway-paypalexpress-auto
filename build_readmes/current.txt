@@ -1,2 +1,1 @@
-ENHANCEMENT: Refactoring & adding documentation
-FIX: Would sometimes cause "Please configure your membership pages" warning to appear
+FIX: Would sometimes clear the default PMPro 'Cancel Page' setting
