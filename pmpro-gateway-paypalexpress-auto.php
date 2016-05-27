@@ -142,11 +142,14 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         }
 
         if (WP_DEBUG) {
-            error_log("Loading PayPal Express (auto) gateway filters & hooks for: {$gateway}");
+            error_log("Try loading PayPal Express (auto) gateway filters & hooks for: {$gateway}");
         }
 
         if ($gateway == "paypalexpress_auto") {
-            
+
+            /**
+             * @since 1.3
+             */
             add_filter('pmpro_is_ready', array($gw, 'is_ready'));
 
             add_filter('pmpro_valid_gateways', array($gw, 'update_gateways'), 10, 1);
@@ -160,16 +163,13 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             add_filter('pmpro_checkout_confirmed', array($gw, 'pmpro_checkout_confirmed'), 10);
             add_action('pmpro_checkout_before_processing', array($gw, 'pmpro_checkout_before_processing'), 10);
             add_filter('pmpro_checkout_default_submit_button', array($gw, 'pmpro_checkout_default_submit_button'), 10);
-            /*            add_action('pmpro_checkout_after_form', array(
-                            $gw,
-                            'pmpro_checkout_after_form'
-                        ), 10); */
 
             add_action('wp_enqueue_scripts', array($gw, 'enqueue'), 10);
             add_action('admin_enqueue_scripts', array($gw, 'admin_enqueue'), 10);
 
             // Don't allow the Add PayPal Express add-on to show itself on the checkout page
             if (function_exists('pmproappe_pmpro_checkout_boxes')) {
+
                 remove_action('pmpro_checkout_boxes', 'pmproappe_pmpro_checkout_boxes', 20);
                 remove_action('pmpro_applydiscountcode_return_js', 'pmproappe_pmpro_applydiscountcode_return_js', 10, 4);
             }
@@ -183,10 +183,11 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      * Verify that the environment is "ready for action" (hooks to the `pmpro_is_ready` filter)
      *
      * @return bool
+     *
+     * @since 1.3
      */
     public function is_ready() {
 
-        global $pmpro_pages;
         global $pmpro_level_ready;
         global $pmpro_gateway_ready;
         global $pmpro_pages_ready;
@@ -209,6 +210,8 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      * Validates that all of the required membership pages exist & are configured
      *
      * @return bool
+     *
+     * @since 1.3
      */
     private function required_pages_ready() {
 
@@ -242,6 +245,8 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      * Validates that all of the required payment gateway options have been configured
      *
      * @return bool
+     *
+     * @since 1.3
      */
     private function required_options_ready() {
         
