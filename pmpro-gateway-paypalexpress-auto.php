@@ -3,7 +3,7 @@
 Plugin Name: E20R PayPal Express Gateway (automatic confirmation)
 Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-customizations/
 Description: PayPal Express payment gateway for PMPro w/Automatic confirmation
-Version: 1.3
+Version: 1.3.1
 Author: Thomas Sjolshagen @ Stranger Studios <thomas@eighty20results.com>
 Author URI: http://www.strangerstudios.com
 */
@@ -36,7 +36,7 @@ if (defined('PMPRO_DIR') && file_exists(PMPRO_DIR . "/classes/gateways/class.pmp
     return;
 }
 
-define('PMPRO_PPEA_VERSION', '1.3');
+define('PMPRO_PPEA_VERSION', '1.3.1');
 
 class PMProGateway_paypalexpress_auto extends PMProGateway
 {
@@ -378,7 +378,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             'tax_state',
             'tax_rate',
             'confirm_page_id',
-            'cancel_page_id',
+            'user_cancelled_id',
         );
 
         return $options;
@@ -532,15 +532,15 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         <tr class="gateway gateway_paypalexpress_auto"
             <?php if ($gateway != "paypalexpress_auto" && $gateway != "paypal" && $gateway != "paypalexpress") { ?>style="display: none;"<?php } ?>>
             <th scope="row" valign="top">
-                <label for="cancel_page_id"><?php _e('Payment Cancelled page', 'pmpro'); ?>:</label>
+                <label for="user_cancelled_id"><?php _e('Payment Cancelled page', 'pmpro'); ?>:</label>
             </th>
             <td>
                 <?php wp_dropdown_pages(
             array(
-                'selected' => $values['cancel_page_id'],
+                'selected' => $values['user_cancelled_id'],
                 'echo' => 1,
-                'name' => 'cancel_page_id',
-                'id' => 'cancel_page_id',
+                'name' => 'user_cancelled_id',
+                'id' => 'user_cancelled_id',
                 'show_option_none' => 'N/A',
                 'option_none_value' => -1,
             )
@@ -1067,7 +1067,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         }
 
         // add page to land on if order is cancelled on PayPal
-        $cancel_page = pmpro_getOption('cancel_page_id');
+        $cancel_page = pmpro_getOption('user_cancelled_id');
 
         $cancel_args = array(
 
