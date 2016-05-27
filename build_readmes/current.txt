@@ -1,3 +1,2 @@
-FIX: Didn't ensure consistent request number for PayPal transaction URL
-FIX: Only configure gateway info & IPN link if using this gateway
-FIX: Subscription plans would fail since subscription profiles do not support PAYMENTREQUEST_n_* fields
+ENHANCEMENT: Refactoring & adding documentation
+FIX: Would sometimes cause "Please configure your membership pages" warning to appear
