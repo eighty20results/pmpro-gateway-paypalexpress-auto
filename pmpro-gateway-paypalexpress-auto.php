@@ -3,26 +3,26 @@
 Plugin Name: E20R PayPal Express Gateway (automatic confirmation)
 Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-customizations/
 Description: PayPal Express payment gateway for PMPro w/Automatic confirmation
-Version: 1.3.1
+Version: 1.4
 Author: Thomas Sjolshagen @ Stranger Studios <thomas@eighty20results.com>
 Author URI: http://www.strangerstudios.com
 */
 
 /**
-Copyright (c) 2016 - Eighty / 20 Results by Wicked Strong Chicks. ALL RIGHTS RESERVED
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (c) 2016 - Eighty / 20 Results by Wicked Strong Chicks. ALL RIGHTS RESERVED
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
 // Make sure PMPro is loaded
@@ -36,7 +36,7 @@ if (defined('PMPRO_DIR') && file_exists(PMPRO_DIR . "/classes/gateways/class.pmp
     return;
 }
 
-define('PMPRO_PPEA_VERSION', '1.3.1');
+define('PMPRO_PPEA_VERSION', '1.4');
 
 class PMProGateway_paypalexpress_auto extends PMProGateway
 {
@@ -177,8 +177,51 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             $gw->set_gateway();
             $gw->set_ipn_link();
         }
+
+        // is the user being returned after clicking "cancel" on the PayPal gateway?
+        if ( (isset($_REQUEST['gateway']) && $_REQUEST['gateway'] == 'paypalexpress_auto')  && isset($_REQUEST['cancelling'])) {
+
+            $gw->processCancelledOrder();
+        }
     }
 
+    /**
+     * Process orders cancelled by user on the PayPal gateway before payment was made
+     *
+     * @return bool
+     * @since v1.4
+     */
+    public function processCancelledOrder() {
+        
+        if (WP_DEBUG) {
+            error_log("Returning via the PayPal 'cancel' button: " . print_r($_REQUEST, true));
+        }
+
+        $token = isset($_REQUEST['token']) ? sanitize_text_field( $_REQUEST['token'] ) : null;
+
+        // do we have an order reference we can use...
+        if ( !is_null( $token ) ) {
+
+            if ( (WP_DEBUG)) {
+                error_log("Customer cancelled order during PayPal payment");
+            }
+            $cancelled_order = new MemberOrder();
+            $cancelled_order->getMemberOrderByPayPalToken( $token );
+
+            if ( true === $cancelled_order->updateStatus('cancelled_at_payment') ) {
+
+                if (WP_DEBUG) {
+                    error_log("Order status for order # {$cancelled_order->id} was updated");
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    
     /**
      * Verify that the environment is "ready for action" (hooks to the `pmpro_is_ready` filter)
      *
@@ -186,7 +229,8 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      *
      * @since 1.3
      */
-    public function is_ready() {
+    public function is_ready()
+    {
 
         global $pmpro_level_ready;
         global $pmpro_gateway_ready;
@@ -194,10 +238,10 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
 
         global $wpdb;
 
-        $pmpro_level_ready = (bool) $wpdb->get_var( "SELECT id FROM {$wpdb->pmpro_membership_levels} LIMIT 1" );
+        $pmpro_level_ready = (bool)$wpdb->get_var("SELECT id FROM {$wpdb->pmpro_membership_levels} LIMIT 1");
 
         if (WP_DEBUG) {
-            error_log("PMPro level ready & configured: " . ( $pmpro_level_ready ? 'Yes' : 'No'));
+            error_log("PMPro level ready & configured: " . ($pmpro_level_ready ? 'Yes' : 'No'));
         }
 
         $pmpro_pages_ready = $this->required_pages_ready();
@@ -213,7 +257,8 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      *
      * @since 1.3
      */
-    private function required_pages_ready() {
+    private function required_pages_ready()
+    {
 
         global $pmpro_pages;
 
@@ -223,19 +268,19 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             error_log("Page List: " . print_r($pmpro_pages, true));
         }
 
-        foreach( $pmpro_pages as $p ) {
+        foreach ($pmpro_pages as $p) {
 
             $pg = get_post($p, ARRAY_A);
 
             if (WP_DEBUG) {
-                error_log("Page: {$p} - Exists: " . ( !empty($pg) ? 'True' : 'False'));
+                error_log("Page: {$p} - Exists: " . (!empty($pg) ? 'True' : 'False'));
             }
 
-            $page_test = $page_test && (! empty($pg) );
+            $page_test = $page_test && (!empty($pg));
         }
 
         if (WP_DEBUG) {
-            error_log("All PMPro pages are ready & configured: " . ( $page_test ? 'Yes' : 'No'));
+            error_log("All PMPro pages are ready & configured: " . ($page_test ? 'Yes' : 'No'));
         }
 
         return $page_test;
@@ -248,8 +293,9 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      *
      * @since 1.3
      */
-    private function required_options_ready() {
-        
+    private function required_options_ready()
+    {
+
         $options_array = array(
             'gateway_environment', 'ppauto_gateway_email', 'ppauto_apiusername',
             'ppauto_apipassword', 'ppauto_apisignature'
@@ -258,19 +304,20 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         $options_array = apply_filters('pmpro_ppe_auto_required_options', $options_array);
         $option_set = true;
 
-        foreach( $options_array as $option) {
+        foreach ($options_array as $option) {
 
             $opt = pmpro_getOption($option);
 
-            $option_set = $option_set && ( ! empty( $opt ) );
+            $option_set = $option_set && (!empty($opt));
         }
 
         if (WP_DEBUG) {
-            error_log("All Payment Gateway settings are ready & configured: " . ( $option_set ? 'Yes' : 'No'));
+            error_log("All Payment Gateway settings are ready & configured: " . ($option_set ? 'Yes' : 'No'));
         }
 
         return $option_set;
     }
+
     /**
      * Make sure this gateway is in the gateways list
      *
@@ -299,7 +346,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         }
 
         global $gateway;
-        
+
         wp_register_script(
             'pmpro_gateway_paypalexpress_auto',
             plugin_dir_url(__FILE__) . 'js/pmpro_paypalexpress_auto.js',
@@ -881,6 +928,11 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         }
     */
 
+    /**
+     * getExpressCheckoutDetails
+     * @param $order
+     * @return bool
+     */
     function getExpressCheckoutDetails(&$order)
     {
 
@@ -1250,7 +1302,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         ) {
 
             if (WP_DEBUG) {
-                error_log("Successfully charged:  " . print_r( $this->httpParsedResponseAr, true) );
+                error_log("Successfully charged:  " . print_r($this->httpParsedResponseAr, true));
             }
 
             $order->payment_transaction_id = urldecode($this->httpParsedResponseAr["PAYMENTINFO_{$this->requestNo}_TRANSACTIONID"]);
@@ -1648,7 +1700,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
 }
 
 //load class when WP is loaded
-add_action('init', array( PMProGateway_paypalexpress_auto::get_instance(), 'init'), 11);
+add_action('init', array(PMProGateway_paypalexpress_auto::get_instance(), 'init'), 11);
 
 require plugin_dir_path(__FILE__) . 'plugin-updates/plugin-update-checker.php';
 $myUpdateChecker = PucFactory::buildUpdateChecker(
