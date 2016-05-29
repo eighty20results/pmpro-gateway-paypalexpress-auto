@@ -3,7 +3,7 @@ Contributors: strangerstudios, eighty20results
 Tags: paid memberships pro, ecommerce, paypal express, payment gateway
 Requires at least: 3.5
 Tested up to: 4.5.2
-Stable tag: 1.3.1
+Stable tag: 1.4
 
 A custom PayPal Express Payment Gateway for Paid Memberships Pro
 
