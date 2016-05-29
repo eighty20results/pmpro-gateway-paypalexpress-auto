@@ -1,1 +1,1 @@
-FIX: Would sometimes clear the default PMPro 'Cancel Page' setting
+ENHANCEMENT: Saves any PayPal error message to Order notes on failed PayPal transaction
