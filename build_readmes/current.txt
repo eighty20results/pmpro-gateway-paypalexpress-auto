@@ -1,2 +1,1 @@
-ENHANCEMENT: Refactored for WP Coding Style compliance
-ENHANCEMENT: Set 'cancelled_at_payment' as order status when user clicks "cancel" during PayPal.com payment processing.
+ENHANCEMENT: Saves any PayPal error message to Order notes on failed PayPal transaction
