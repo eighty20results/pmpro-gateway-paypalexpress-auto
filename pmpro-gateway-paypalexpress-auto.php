@@ -972,6 +972,13 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             $order->error = urldecode($this->httpParsedResponseAr['L_LONGMESSAGE0']);
             $order->shorterror = urldecode($this->httpParsedResponseAr['L_SHORTMESSAGE0']);
 
+            if (WP_DEBUG) {
+                error_log("Updating the order notes with the PayPal error message");
+            }
+
+            $order->notes = $order->notes . " (GetExpressCheckoutDetails [{$order->errorcode}]): {$order->shorterror} - {$order->error}";
+            $order->saveOrder();
+
             return false;
             //exit('SetExpressCheckout failed: ' . print_r($httpParsedResponseAr, true));
         }
@@ -1225,6 +1232,13 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             $order->error = urldecode($this->httpParsedResponseAr['L_LONGMESSAGE0']);
             $order->shorterror = urldecode($this->httpParsedResponseAr['L_SHORTMESSAGE0']);
 
+            if (WP_DEBUG) {
+                error_log("Updating the order notes with the PayPal error message");
+            }
+
+            $order->notes = $order->notes . " (SetExpressCheckout [{$order->errorcode}]): {$order->shorterror} - {$order->error})";
+            $order->saveOrder();
+
             return false;
             //exit('SetExpressCheckout failed: ' . print_r($httpParsedResponseAr, true));
         }
@@ -1330,7 +1344,14 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             $order->errorcode = $this->httpParsedResponseAr['L_ERRORCODE0'];
             $order->error = urldecode($this->httpParsedResponseAr['L_LONGMESSAGE0']);
             $order->shorterror = urldecode($this->httpParsedResponseAr['L_SHORTMESSAGE0']);
+            
+            if (WP_DEBUG) {
+                error_log("Updating the order notes with the PayPal error message");
+            }
 
+            $order->notes = $order->notes . " (DoExpressCheckoutPayment [{$order->errorcode}]): {$order->shorterror} - {$order->error}";
+            $order->saveOrder();
+            
             // increment request counter
             $this->requestNo++;
 
@@ -1459,6 +1480,13 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             $order->error = urldecode($this->httpParsedResponseAr['L_LONGMESSAGE0']);
             $order->shorterror = urldecode($this->httpParsedResponseAr['L_SHORTMESSAGE0']);
 
+            if (WP_DEBUG) {
+                error_log("Updating the order notes with the PayPal error message");
+            }
+
+            $order->notes = $order->notes . " (CreateRecurringPaymentsProfile [{$order->errorcode}]): {$order->shorterror} - {$order->error}";
+            $order->saveOrder();
+
             return false;
         }
     }
@@ -1500,6 +1528,13 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             $order->errorcode = $this->httpParsedResponseAr['L_ERRORCODE0'];
             $order->error = urldecode($this->httpParsedResponseAr['L_LONGMESSAGE0']) . ". " . __("Please contact the site owner or cancel your subscription from within PayPal to make sure you are not charged going forward.", "pmpro");
             $order->shorterror = urldecode($this->httpParsedResponseAr['L_SHORTMESSAGE0']);
+
+            if (WP_DEBUG) {
+                error_log("Updating the order notes with the PayPal error message");
+            }
+
+            $order->notes = $order->notes . " (ManageRecurringPaymentsProfileStatus [{$order->errorcode}]): {$order->shorterror} - {$order->error}";
+            $order->saveOrder();
 
             return false;
         }
@@ -1584,6 +1619,13 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             $order->errorcode = $this->httpParsedResponseAr['L_ERRORCODE0'];
             $order->error = urldecode($this->httpParsedResponseAr['L_LONGMESSAGE0']);
             $order->shorterror = urldecode($this->httpParsedResponseAr['L_SHORTMESSAGE0']);
+
+            if (WP_DEBUG) {
+                error_log("Updating the order notes with the PayPal error message");
+            }
+
+            $order->notes = $order->notes . " (GetRecurringPaymentsProfileDetails [{$order->errorcode}]): {$order->shorterror} - {$order->error}";
+            $order->saveOrder();
 
             return false;
         }
