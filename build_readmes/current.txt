@@ -1,1 +1,2 @@
-FIX: Would sometimes clear the default PMPro 'Cancel Page' setting
+ENHANCEMENT: Refactored for WP Coding Style compliance
+ENHANCEMENT: Set 'cancelled_at_payment' as order status when user clicks "cancel" during PayPal.com payment processing.
