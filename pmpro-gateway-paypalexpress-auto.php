@@ -3,26 +3,26 @@
 Plugin Name: E20R PayPal Express Gateway (automatic confirmation)
 Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-customizations/
 Description: PayPal Express payment gateway for PMPro w/Automatic confirmation
-Version: 1.2
+Version: 1.4
 Author: Thomas Sjolshagen @ Stranger Studios <thomas@eighty20results.com>
 Author URI: http://www.strangerstudios.com
 */
 
 /**
-Copyright (c) 2016 - Eighty / 20 Results by Wicked Strong Chicks. ALL RIGHTS RESERVED
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (c) 2016 - Eighty / 20 Results by Wicked Strong Chicks. ALL RIGHTS RESERVED
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
 // Make sure PMPro is loaded
@@ -36,7 +36,7 @@ if (defined('PMPRO_DIR') && file_exists(PMPRO_DIR . "/classes/gateways/class.pmp
     return;
 }
 
-define('PMPRO_PPEA_VERSION', '1.2');
+define('PMPRO_PPEA_VERSION', '1.4');
 
 class PMProGateway_paypalexpress_auto extends PMProGateway
 {
@@ -78,6 +78,8 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         if (WP_DEBUG) {
             error_log("Instantiating the payment gateway");
         }
+
+        $this->requestNo = 0;
 
         $this->gateway = $gateway;
 
@@ -140,10 +142,15 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         }
 
         if (WP_DEBUG) {
-            error_log("Loading PayPal Express (auto) gateway filters & hooks for: {$gateway}");
+            error_log("Try loading PayPal Express (auto) gateway filters & hooks for: {$gateway}");
         }
 
         if ($gateway == "paypalexpress_auto") {
+
+            /**
+             * @since 1.3
+             */
+            add_filter('pmpro_is_ready', array($gw, 'is_ready'));
 
             add_filter('pmpro_valid_gateways', array($gw, 'update_gateways'), 10, 1);
 
@@ -156,23 +163,159 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             add_filter('pmpro_checkout_confirmed', array($gw, 'pmpro_checkout_confirmed'), 10);
             add_action('pmpro_checkout_before_processing', array($gw, 'pmpro_checkout_before_processing'), 10);
             add_filter('pmpro_checkout_default_submit_button', array($gw, 'pmpro_checkout_default_submit_button'), 10);
-            /*            add_action('pmpro_checkout_after_form', array(
-                            $gw,
-                            'pmpro_checkout_after_form'
-                        ), 10); */
 
             add_action('wp_enqueue_scripts', array($gw, 'enqueue'), 10);
             add_action('admin_enqueue_scripts', array($gw, 'admin_enqueue'), 10);
 
             // Don't allow the Add PayPal Express add-on to show itself on the checkout page
             if (function_exists('pmproappe_pmpro_checkout_boxes')) {
+
                 remove_action('pmpro_checkout_boxes', 'pmproappe_pmpro_checkout_boxes', 20);
                 remove_action('pmpro_applydiscountcode_return_js', 'pmproappe_pmpro_applydiscountcode_return_js', 10, 4);
             }
+
+            $gw->set_gateway();
+            $gw->set_ipn_link();
         }
 
-        $gw->set_gateway();
-        $gw->set_ipn_link();
+        // is the user being returned after clicking "cancel" on the PayPal gateway?
+        if ( (isset($_REQUEST['gateway']) && $_REQUEST['gateway'] == 'paypalexpress_auto')  && isset($_REQUEST['cancelling'])) {
+
+            $gw->processCancelledOrder();
+        }
+    }
+
+    /**
+     * Process orders cancelled by user on the PayPal gateway before payment was made
+     *
+     * @return bool
+     * @since v1.4
+     */
+    public function processCancelledOrder() {
+        
+        if (WP_DEBUG) {
+            error_log("Returning via the PayPal 'cancel' button: " . print_r($_REQUEST, true));
+        }
+
+        $token = isset($_REQUEST['token']) ? sanitize_text_field( $_REQUEST['token'] ) : null;
+
+        // do we have an order reference we can use...
+        if ( !is_null( $token ) ) {
+
+            if ( (WP_DEBUG)) {
+                error_log("Customer cancelled order during PayPal payment");
+            }
+            $cancelled_order = new MemberOrder();
+            $cancelled_order->getMemberOrderByPayPalToken( $token );
+
+            if ( true === $cancelled_order->updateStatus('cancelled_at_payment') ) {
+
+                if (WP_DEBUG) {
+                    error_log("Order status for order # {$cancelled_order->id} was updated");
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    
+    /**
+     * Verify that the environment is "ready for action" (hooks to the `pmpro_is_ready` filter)
+     *
+     * @return bool
+     *
+     * @since 1.3
+     */
+    public function is_ready()
+    {
+
+        global $pmpro_level_ready;
+        global $pmpro_gateway_ready;
+        global $pmpro_pages_ready;
+
+        global $wpdb;
+
+        $pmpro_level_ready = (bool)$wpdb->get_var("SELECT id FROM {$wpdb->pmpro_membership_levels} LIMIT 1");
+
+        if (WP_DEBUG) {
+            error_log("PMPro level ready & configured: " . ($pmpro_level_ready ? 'Yes' : 'No'));
+        }
+
+        $pmpro_pages_ready = $this->required_pages_ready();
+        $pmpro_gateway_ready = $this->required_options_ready();
+
+        return $pmpro_pages_ready && $pmpro_gateway_ready;
+    }
+
+    /**
+     * Validates that all of the required membership pages exist & are configured
+     *
+     * @return bool
+     *
+     * @since 1.3
+     */
+    private function required_pages_ready()
+    {
+
+        global $pmpro_pages;
+
+        $page_test = true;
+
+        if (WP_DEBUG) {
+            error_log("Page List: " . print_r($pmpro_pages, true));
+        }
+
+        foreach ($pmpro_pages as $p) {
+
+            $pg = get_post($p, ARRAY_A);
+
+            if (WP_DEBUG) {
+                error_log("Page: {$p} - Exists: " . (!empty($pg) ? 'True' : 'False'));
+            }
+
+            $page_test = $page_test && (!empty($pg));
+        }
+
+        if (WP_DEBUG) {
+            error_log("All PMPro pages are ready & configured: " . ($page_test ? 'Yes' : 'No'));
+        }
+
+        return $page_test;
+    }
+
+    /**
+     * Validates that all of the required payment gateway options have been configured
+     *
+     * @return bool
+     *
+     * @since 1.3
+     */
+    private function required_options_ready()
+    {
+
+        $options_array = array(
+            'gateway_environment', 'ppauto_gateway_email', 'ppauto_apiusername',
+            'ppauto_apipassword', 'ppauto_apisignature'
+        );
+
+        $options_array = apply_filters('pmpro_ppe_auto_required_options', $options_array);
+        $option_set = true;
+
+        foreach ($options_array as $option) {
+
+            $opt = pmpro_getOption($option);
+
+            $option_set = $option_set && (!empty($opt));
+        }
+
+        if (WP_DEBUG) {
+            error_log("All Payment Gateway settings are ready & configured: " . ($option_set ? 'Yes' : 'No'));
+        }
+
+        return $option_set;
     }
 
     /**
@@ -203,7 +346,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         }
 
         global $gateway;
-        
+
         wp_register_script(
             'pmpro_gateway_paypalexpress_auto',
             plugin_dir_url(__FILE__) . 'js/pmpro_paypalexpress_auto.js',
@@ -282,7 +425,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             'tax_state',
             'tax_rate',
             'confirm_page_id',
-            'cancel_page_id',
+            'user_cancelled_id',
         );
 
         return $options;
@@ -436,15 +579,15 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         <tr class="gateway gateway_paypalexpress_auto"
             <?php if ($gateway != "paypalexpress_auto" && $gateway != "paypal" && $gateway != "paypalexpress") { ?>style="display: none;"<?php } ?>>
             <th scope="row" valign="top">
-                <label for="cancel_page_id"><?php _e('Payment Cancelled page', 'pmpro'); ?>:</label>
+                <label for="user_cancelled_id"><?php _e('Payment Cancelled page', 'pmpro'); ?>:</label>
             </th>
             <td>
                 <?php wp_dropdown_pages(
             array(
-                'selected' => $values['cancel_page_id'],
+                'selected' => $values['user_cancelled_id'],
                 'echo' => 1,
-                'name' => 'cancel_page_id',
-                'id' => 'cancel_page_id',
+                'name' => 'user_cancelled_id',
+                'id' => 'user_cancelled_id',
                 'show_option_none' => 'N/A',
                 'option_none_value' => -1,
             )
@@ -710,6 +853,131 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
     }
 
     /**
+     * Swap in our submit buttons.
+     *
+     * @param boolean $show - Not used in this gateway (PMPro PayPal Express (Auto) gateway).
+     *
+     * @return boolean - Always returns false
+     * @since 1.8
+     */
+    static function pmpro_checkout_default_submit_button($show)
+    {
+        global $gateway, $pmpro_requirebilling;
+
+        //show our submit buttons
+        ?>
+        <?php if ($gateway == "paypal" || $gateway == "paypalexpress" || $gateway == "paypalstandard" || $gateway == "paypalexpress_auto") { ?>
+        <span id="pmpro_paypalexpress_auto_checkout"
+              <?php if (($gateway != "paypalexpress_auto" && $gateway != "paypalexpress" && $gateway != "paypalstandard") || !$pmpro_requirebilling) { ?>style="display: none;"<?php } ?>>
+			<input type="hidden" name="gateway" value="<?php echo $gateway; ?>"/>
+            <input type="hidden" name="submit-checkout" value="1"/>
+				<input type="image" value="<?php _e('Check Out with PayPal', 'pmpro'); ?> &raquo;"
+                       src="<?php echo apply_filters("pmpro_paypal_button_image", "https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"); ?>"/>
+			</span>
+    <?php } ?>
+
+        <span id="pmpro_submit_span"
+              <?php if (($gateway == "paypalexpress_auto" || $gateway == "paypalexpress" || $gateway == "paypalstandard") && $pmpro_requirebilling) { ?>style="display: none;"<?php } ?>>
+				<input type="hidden" name="submit-checkout" value="1"/>
+				<input type="submit" class="pmpro_btn pmpro_btn-submit-checkout"
+                       value="<?php if ($pmpro_requirebilling) {
+                           _e('Submit and Check Out', 'pmpro');
+                       } else {
+                           _e('Submit and Confirm', 'pmpro');
+                       } ?> &raquo;"/>
+			</span>
+        <?php
+
+        //don't show the default
+        return false;
+    }
+
+    /**
+     * Scripts for checkout page.
+     *
+     * @since 1.8
+     */
+    /*    static function pmpro_checkout_after_form()
+        {
+            ?>
+            <script>
+                <!--
+                //choosing payment method
+                jQuery('input[name=gateway]').click(function () {
+                    if (jQuery(this).val() == 'paypal') {
+                        jQuery('#pmpro_paypalexpress_checkout').hide();
+                        jQuery('#pmpro_billing_address_fields').show();
+                        jQuery('#pmpro_payment_information_fields').show();
+                        jQuery('#pmpro_submit_span').show();
+                    }
+                    else {
+                        jQuery('#pmpro_billing_address_fields').hide();
+                        jQuery('#pmpro_payment_information_fields').hide();
+                        jQuery('#pmpro_submit_span').hide();
+                        jQuery('#pmpro_paypalexpress_auto_checkout').show();
+                    }
+                });
+
+                //select the radio button if the label is clicked on
+                jQuery('a.pmpro_radio').click(function () {
+                    jQuery(this).prev().click();
+                });
+                -->
+            </script>
+            <?php
+        }
+    */
+
+    /**
+     * getExpressCheckoutDetails
+     * @param $order
+     * @return bool
+     */
+    function getExpressCheckoutDetails(&$order)
+    {
+
+        $nvpStr = "&TOKEN={$order->Token}";
+
+        $nvpStr = apply_filters("pmpro_get_express_checkout_details_nvpstr", $nvpStr, $order);
+
+        /* Make the API call and store the results in an array.  If the
+        call was a success, show the authorization details, and provide
+        an action to complete the payment.  If failed, show the error
+        */
+        $this->httpParsedResponseAr = $this->PPHttpPost('GetExpressCheckoutDetails', $nvpStr);
+
+        if ("SUCCESS" == strtoupper($this->httpParsedResponseAr["ACK"]) ||
+            "SUCCESSWITHWARNING" == strtoupper($this->httpParsedResponseAr["ACK"])
+        ) {
+
+            if (WP_DEBUG) {
+                error_log("Setting order status to 'review'");
+                error_log("Returned values: " . print_r($this->httpParsedResponseAr, true));
+            }
+
+            $order->status = "review";
+
+            //update order
+            $order->saveOrder();
+
+            return true;
+        } else {
+
+            if (WP_DEBUG) {
+                error_log("Setting order status to 'error'");
+            }
+
+            $order->status = "error";
+            $order->errorcode = $this->httpParsedResponseAr['L_ERRORCODE0'];
+            $order->error = urldecode($this->httpParsedResponseAr['L_LONGMESSAGE0']);
+            $order->shorterror = urldecode($this->httpParsedResponseAr['L_SHORTMESSAGE0']);
+
+            return false;
+            //exit('SetExpressCheckout failed: ' . print_r($httpParsedResponseAr, true));
+        }
+    }
+
+    /**
      * PayPal Express, this is run first to authorize from PayPal
      *
      * @param MemberOrder $order - The order class
@@ -718,6 +986,9 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
      */
     function setExpressCheckout(&$order)
     {
+        if (WP_DEBUG) {
+            error_log("In setExpressCheckout, using request #: {$this->requestNo}");
+        }
 
         global $pmpro_currency;
         global $pmpro_pages;
@@ -848,7 +1119,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         }
 
         // add page to land on if order is cancelled on PayPal
-        $cancel_page = pmpro_getOption('cancel_page_id');
+        $cancel_page = pmpro_getOption('user_cancelled_id');
 
         $cancel_args = array(
 
@@ -963,127 +1234,12 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         //redirect to PayPal
     }
 
-    /**
-     * Swap in our submit buttons.
-     *
-     * @param boolean $show - Not used in this gateway (PMPro PayPal Express (Auto) gateway).
-     *
-     * @return boolean - Always returns false
-     * @since 1.8
-     */
-    static function pmpro_checkout_default_submit_button($show)
-    {
-        global $gateway, $pmpro_requirebilling;
-
-        //show our submit buttons
-        ?>
-        <?php if ($gateway == "paypal" || $gateway == "paypalexpress" || $gateway == "paypalstandard" || $gateway == "paypalexpress_auto") { ?>
-        <span id="pmpro_paypalexpress_auto_checkout"
-              <?php if (($gateway != "paypalexpress_auto" && $gateway != "paypalexpress" && $gateway != "paypalstandard") || !$pmpro_requirebilling) { ?>style="display: none;"<?php } ?>>
-			<input type="hidden" name="gateway" value="<?php echo $gateway; ?>"/>
-            <input type="hidden" name="submit-checkout" value="1"/>
-				<input type="image" value="<?php _e('Check Out with PayPal', 'pmpro'); ?> &raquo;"
-                       src="<?php echo apply_filters("pmpro_paypal_button_image", "https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif"); ?>"/>
-			</span>
-    <?php } ?>
-
-        <span id="pmpro_submit_span"
-              <?php if (($gateway == "paypalexpress_auto" || $gateway == "paypalexpress" || $gateway == "paypalstandard") && $pmpro_requirebilling) { ?>style="display: none;"<?php } ?>>
-				<input type="hidden" name="submit-checkout" value="1"/>
-				<input type="submit" class="pmpro_btn pmpro_btn-submit-checkout"
-                       value="<?php if ($pmpro_requirebilling) {
-                           _e('Submit and Check Out', 'pmpro');
-                       } else {
-                           _e('Submit and Confirm', 'pmpro');
-                       } ?> &raquo;"/>
-			</span>
-        <?php
-
-        //don't show the default
-        return false;
-    }
-
-    /**
-     * Scripts for checkout page.
-     *
-     * @since 1.8
-     */
-    /*    static function pmpro_checkout_after_form()
-        {
-            ?>
-            <script>
-                <!--
-                //choosing payment method
-                jQuery('input[name=gateway]').click(function () {
-                    if (jQuery(this).val() == 'paypal') {
-                        jQuery('#pmpro_paypalexpress_checkout').hide();
-                        jQuery('#pmpro_billing_address_fields').show();
-                        jQuery('#pmpro_payment_information_fields').show();
-                        jQuery('#pmpro_submit_span').show();
-                    }
-                    else {
-                        jQuery('#pmpro_billing_address_fields').hide();
-                        jQuery('#pmpro_payment_information_fields').hide();
-                        jQuery('#pmpro_submit_span').hide();
-                        jQuery('#pmpro_paypalexpress_auto_checkout').show();
-                    }
-                });
-
-                //select the radio button if the label is clicked on
-                jQuery('a.pmpro_radio').click(function () {
-                    jQuery(this).prev().click();
-                });
-                -->
-            </script>
-            <?php
-        }
-    */
-    function getExpressCheckoutDetails(&$order)
-    {
-
-        $nvpStr = "&TOKEN={$order->Token}";
-
-        $nvpStr = apply_filters("pmpro_get_express_checkout_details_nvpstr", $nvpStr, $order);
-
-        /* Make the API call and store the results in an array.  If the
-        call was a success, show the authorization details, and provide
-        an action to complete the payment.  If failed, show the error
-        */
-        $this->httpParsedResponseAr = $this->PPHttpPost('GetExpressCheckoutDetails', $nvpStr);
-
-        if ("SUCCESS" == strtoupper($this->httpParsedResponseAr["ACK"]) ||
-            "SUCCESSWITHWARNING" == strtoupper($this->httpParsedResponseAr["ACK"])
-        ) {
-
-            if (WP_DEBUG) {
-                error_log("Setting order status to 'review'");
-                error_log("Returned values: " . print_r($this->httpParsedResponseAr, true));
-            }
-
-            $order->status = "review";
-
-            //update order
-            $order->saveOrder();
-
-            return true;
-        } else {
-
-            if (WP_DEBUG) {
-                error_log("Setting order status to 'error'");
-            }
-
-            $order->status = "error";
-            $order->errorcode = $this->httpParsedResponseAr['L_ERRORCODE0'];
-            $order->error = urldecode($this->httpParsedResponseAr['L_LONGMESSAGE0']);
-            $order->shorterror = urldecode($this->httpParsedResponseAr['L_SHORTMESSAGE0']);
-
-            return false;
-            //exit('SetExpressCheckout failed: ' . print_r($httpParsedResponseAr, true));
-        }
-    }
-
     function charge(&$order)
     {
+
+        if (WP_DEBUG) {
+            error_log("In charge(), using request #: {$this->requestNo}");
+        }
 
         if (WP_DEBUG) {
             error_log("Processing as a single charge for PayPal Express (gateway::charge())");
@@ -1145,7 +1301,11 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             "SUCCESSWITHWARNING" == strtoupper($this->httpParsedResponseAr["ACK"])
         ) {
 
-            $order->payment_transaction_id = urldecode($this->httpParsedResponseAr["PAYMENTREQUEST_{$this->requestNo}_TRANSACTIONID"]);
+            if (WP_DEBUG) {
+                error_log("Successfully charged:  " . print_r($this->httpParsedResponseAr, true));
+            }
+
+            $order->payment_transaction_id = urldecode($this->httpParsedResponseAr["PAYMENTINFO_{$this->requestNo}_TRANSACTIONID"]);
 
             if (WP_DEBUG) {
                 error_log("Setting order status to 'success'");
@@ -1186,6 +1346,10 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
             error_log("Processing as a recurring subscription plan for PayPal Express (gateway::subscribe())");
         }
 
+        if (WP_DEBUG) {
+            error_log("In subscribe(), using request #: {$this->requestNo}");
+        }
+
         global $pmpro_currency;
 
         if (empty($order->code)) {
@@ -1214,27 +1378,28 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
 
         $nvpStr .= "&INITAMT={$initial_payment}";
         $nvpStr .= "&AMT={$amount}";
-        $nvpStr .= "&PAYMENTREQUEST_{$this->requestNo}_CURRENCYCODE={$pmpro_currency}";
+        $nvpStr .= "&CURRENCYCODE={$pmpro_currency}";
         $nvpStr .= "&PROFILESTARTDATE={$order->ProfileStartDate}";
 
         if (!empty($amount_tax)) {
-            $nvpStr .= "&PAYMENTREQUEST_{$this->requestNo}_TAXAMT={$amount_tax}";
+            $nvpStr .= "&TAXAMT={$amount_tax}";
         }
 
         $nvpStr .= "&BILLINGPERIOD={$order->BillingPeriod}";
         $nvpStr .= "&BILLINGFREQUENCY={$order->BillingFrequency}";
         $nvpStr .= "&AUTOBILLAMT=AddToNextBilling";
 
+        /*
         $this->set_ipn_link();
         $ipn_link = urlencode($this->ipn_notifylink);
 
         $nvpStr .= "&PAYMENTREQUEST_{$this->requestNo}_NOTIFYURL={$ipn_link}";
-
+        */
         $descr = substr($order->membership_level->name . " at " . get_bloginfo("name"), 0, 127);
         $descr = apply_filters('pmpro_paypal_level_description', $descr, $order->membership_level->name, $order, get_bloginfo("name"));
         $descr = urlencode($descr);
 
-        $nvpStr .= "&PAYMENTREQUEST_{$this->requestNo}_DESC={$descr}";
+        $nvpStr .= "&DESC={$descr}";
 
         //if billing cycles are defined
         if (!empty($order->TotalBillingCycles)) {
@@ -1272,7 +1437,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
         ) {
 
             if (WP_DEBUG) {
-                error_log("Setting order status to 'success'");
+                error_log("Setting order status to 'success': " . print_r($this->httpParsedResponseAr, true));
             }
 
             $order->status = "success";
@@ -1535,7 +1700,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway
 }
 
 //load class when WP is loaded
-add_action('plugins_loaded', array( PMProGateway_paypalexpress_auto::get_instance(), 'init'), 11);
+add_action('init', array(PMProGateway_paypalexpress_auto::get_instance(), 'init'), 11);
 
 require plugin_dir_path(__FILE__) . 'plugin-updates/plugin-update-checker.php';
 $myUpdateChecker = PucFactory::buildUpdateChecker(

@@ -1,3 +1,1 @@
-FIX: Refactored
-ENHANCEMENT: Add build environment
-ENHANCEMENT: Added one-click upgrade support
+FIX: Would sometimes clear the default PMPro 'Cancel Page' setting
