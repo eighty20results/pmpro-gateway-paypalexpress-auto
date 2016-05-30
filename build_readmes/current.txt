@@ -1,1 +1,1 @@
-ENHANCEMENT: Saves any PayPal error message to Order notes on failed PayPal transaction
+FIX: Would sometimes trigger JavaScript error
