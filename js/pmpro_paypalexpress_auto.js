@@ -16,7 +16,7 @@
  **/
 
 var pmpro_PayPalGW = {
-    init: function() {
+    init: function () {
 
         "use strict";
         this.gateway_input = jQuery("input[name='gateway']");
@@ -38,7 +38,7 @@ var pmpro_PayPalGW = {
 
         var self = this;
 
-        self.gateway_input.unbind('click').on('click', function() {
+        self.gateway_input.unbind('click').on('click', function () {
             self.show_for_gateway();
         });
 
@@ -50,11 +50,11 @@ var pmpro_PayPalGW = {
         self.show_for_gateway();
 
         // Do we need to display the billing address fields?
-        if (pmpro_ppea_gw.variables.show_billing_address === 1 ) {
+        if (pmpro_ppea_gw.variables.show_billing_address === 1) {
             self.show_billing_address();
         }
     },
-    show_billing_address: function() {
+    show_billing_address: function () {
         "use strict";
 
         var self = this;
@@ -65,14 +65,14 @@ var pmpro_PayPalGW = {
         }
 
     },
-    show_for_gateway: function() {
+    show_for_gateway: function () {
 
         "use strict";
         var self = this;
 
-        console.log("Processing for...: " + self.gateway_name );
+        console.log("Processing for...: " + self.gateway_name);
 
-        switch(self.gateway_name) {
+        switch (self.gateway_name) {
             case 'paypal':
                 console.log("Show for PayPal gateway is TODO");
                 break;
@@ -86,7 +86,7 @@ var pmpro_PayPalGW = {
                 self.user_fields_lnk.hide();
                 self.payment_method.hide();
 
-                if ( (self.token_isset.length > 0) && (self.confirm_isset > 0) ){
+                if (( typeof self.token_isset !== 'undefined'  ) && (self.confirm_isset > 0)) {
                     console.log("Will show the confirmation button");
                     self.payment_btn.show();
                 } else {
@@ -108,7 +108,7 @@ var pmpro_PayPalGW = {
 };
 
 
-jQuery(document).ready(function() {
+jQuery(document).ready(function () {
     "use strict";
 
     var PayPal = pmpro_PayPalGW;
