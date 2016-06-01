@@ -1,1 +1,1 @@
-FIX: Would sometimes trigger JavaScript error
+FIX/ENHANCEMENT: Show PayPal button when signing up for free membership with Sponsored Memberships option

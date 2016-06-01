@@ -28,6 +28,8 @@ var pmpro_PayPalGW = {
         this.payment_info_fields = jQuery('#pmpro_payment_information_fields');
         this.payment_btn = jQuery('#pmpro_submit_span');
         this.paypal_btn = jQuery('span#pmpro_paypalexpress_checkout');
+        this.paypal_auto_btn = jQuery('span#pmpro_paypalexpress_auto_checkout');
+        this.sponsored_memberships = jQuery('table#pmpro_extra_seats');
         this.user_fields = jQuery("#pmpro_user_fields");
         this.user_fields_lnk = jQuery('#pmpro_user_fields_a');
         this.billing_info = jQuery('#pmpro_billing_address_fields');
@@ -94,7 +96,13 @@ var pmpro_PayPalGW = {
                     self.payment_btn.hide();
                 }
 
+                if ( typeof self.sponsored_memberships !== 'undefined' ) {
+                    self.paypal_auto_btn.show();
+                }
+
                 self.paypal_btn.hide();
+
+
                 break;
 
             default:
