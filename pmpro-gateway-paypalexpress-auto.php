@@ -3,7 +3,7 @@
 Plugin Name: E20R PayPal Express Gateway (automatic confirmation)
 Plugin URI: http://www.paidmembershipspro.com/wp/pmpro-customizations/
 Description: PayPal Express payment gateway for PMPro w/Automatic confirmation
-Version: 1.4.4
+Version: 1.4.5
 Author: Thomas Sjolshagen @ Stranger Studios <thomas@eighty20results.com>
 Author URI: http://www.strangerstudios.com
 */
@@ -1147,7 +1147,7 @@ class PMProGateway_paypalexpress_auto extends PMProGateway {
 			'cancelling' => true,
 		);
 
-		if ( - 1 != $cancel_page && $pmpro_pages['levels'] != $cancel_page ) {
+		if ( (!empty($cancel_page) && -1 != $cancel_page) && $pmpro_pages['levels'] != $cancel_page ) {
 			if ( WP_DEBUG ) {
 				error_log( "Using custom page ({$cancel_page}) as the cancellation page" );
 			}
@@ -1226,10 +1226,11 @@ class PMProGateway_paypalexpress_auto extends PMProGateway {
 
 			$paypal_url .= $paypal_params;
 
+/*
 			if ( WP_DEBUG ) {
 				error_log( "Sending user to PayPal: {$paypal_url}" );
 			}
-
+*/
 			wp_redirect( $paypal_url );
 			exit;
 
@@ -1715,8 +1716,8 @@ class PMProGateway_paypalexpress_auto extends PMProGateway {
 		}
 
 		if ( WP_DEBUG ) {
-			error_log( "URL for PayPal Express transaction: {$nvpreq}" );
-			error_log( "Sending to: {$this->gateway_url}" );
+			// error_log( "URL for PayPal Express transaction: {$nvpreq}" );
+			error_log( "Sending URL to: {$this->gateway_url}" );
 		}
 
 		//post to PayPal
