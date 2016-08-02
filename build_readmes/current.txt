@@ -1,1 +1,2 @@
-FIX/ENHANCEMENT: Show PayPal button when signing up for free membership with Sponsored Memberships option
+FIX: Error when selecting the cancel page destination
+FIX: Removed some debug logging
